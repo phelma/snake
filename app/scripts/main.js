@@ -145,7 +145,7 @@ SNAKE.snake = function() {
     var nextPosition = posArray[0].slice();
     direction = nextDirection;
     if (directionAfterThat) {
-      nextDirection = directionAfterThat;
+      setDirection(directionAfterThat);
       directionAfterThat = undefined;
     }
     switch (direction) {
