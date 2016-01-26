@@ -1,0 +1,12 @@
+body {
+  background: #fafafa;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #333;
+}
+
+canvas.snake {
+  image-rendering: pixelated;
+  height: 200px;
+  width: 200px;
+  border: 1px solid black;
+}
