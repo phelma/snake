@@ -1,4 +1,4 @@
-/* global: hammer */
+/* global Hammer */
 'use strict';
 
 var width = 20;
@@ -15,6 +15,10 @@ var throughWalls = true;
 var snakeColour = '#2B3E51';
 
 var SNAKE = {};
+
+var touchEl = document.querySelector('.touch');
+var hammertime = new Hammer.Manager(touchEl);
+hammertime.add( new Hammer.Swipe({direction: Hammer.DIRECTION_ALL}));
 
 SNAKE.game = (function() {
   var ctx;
@@ -39,6 +43,13 @@ SNAKE.game = (function() {
       40: 'down'
     };
 
+    var swipeToDirections = {
+      2: 'left',
+      4: 'right',
+      8: 'up',
+      16: 'down'
+    };
+
     document.onkeydown = function(event) {
       var key = event.which;
       var direction = keysToDirections[key];
@@ -50,6 +61,17 @@ SNAKE.game = (function() {
         init();
       }
     };
+
+    hammertime.on('swipe', function (event) {
+      event.preventDefault();
+      var direction = swipeToDirections[event.direction];
+      if (direction) {
+        snake.setDirection(direction);
+      }
+    });
+
+
+
   }
 
   function init() {
@@ -200,16 +222,4 @@ SNAKE.snake = function() {
   };
 };
 
-// var body = document.querySelector('body');
-// var hammertime = new Hammer.Manager(body);
-// hammertime.add( new Hammer.Swipe({direction: Hammer.DIRECTION_ALL}));
-// hammertime.on('swipe', function (event) {
-//   console.log('swipe', event);
-// });
-
-
-
-
 SNAKE.game.init();
-
-

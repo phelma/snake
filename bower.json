@@ -1,7 +1,9 @@
 {
   "name": "snake",
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "hammerjs": "~2.0.6"
+  },
   "devDependencies": {
     "chai": "~3.4.2",
     "mocha": "~2.3.4"
