@@ -276,7 +276,7 @@ SNAKE.snake = function() {
   }
 
   function speedup(){
-    fps++;
+    fps+= 0.1;
     frameLength = 1000 / fps;
   }
 
