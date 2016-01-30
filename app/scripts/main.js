@@ -1,10 +1,10 @@
 /* global Hammer */
 'use strict';
 
-var width = 20;
-var height = 20;
+var width = 10;
+var height = 10;
 
-var fps = 10;
+var fps = 5;
 var frameLength = 1000 / fps;
 
 var startX = 2;
@@ -14,9 +14,10 @@ var startLength = 10;
 var throughWalls = true;
 
 var bgColour = '#ECF0F1';
-var snakeColour = '#2B3E51';
+var snakeHeadColour = '#2B3E51';
+var snakeColour = '#305791';
 var deadColour = '#C23824';
-var foodColour = '#1FCE6D';
+var foodColour = '#1AAF5D';
 var scoreColour = '#F2C500';
 
 var SNAKE = {};
@@ -35,6 +36,7 @@ SNAKE.game = (function() {
     snake.drawScore(ctx);
     snake.advance();
     if (snake.check().crash){
+      // snake.dead
       snake.draw(ctx, true);
     } else {
       if (snake.check().food){
@@ -111,7 +113,7 @@ SNAKE.game = (function() {
 
 SNAKE.snake = function() {
   var posArray = [];
-  var foodPos = [2, 10];
+  var foodPos = [2, 6];
   for (let i = 0; i < startLength; i++){
     posArray.push([startX, startY - i]);
   }
@@ -145,9 +147,9 @@ SNAKE.snake = function() {
   function drawScore (ctx) {
     ctx.save();
     ctx.fillStyle = scoreColour;
-    ctx.font = '20px courier';
+    ctx.font = '8px "Press Start 2P"';
     var score = posArray.length - startLength;
-    ctx.fillText(score, 0, 20, width);
+    ctx.fillText(score, 0, height, width);
   }
 
   function drawSection(ctx, position) {
@@ -158,8 +160,12 @@ SNAKE.snake = function() {
 
   function draw(ctx, dead) {
     ctx.save();
-    ctx.fillStyle = dead ? deadColour : snakeColour;
     for (let i = 0; i < posArray.length; i++) {
+      if (i === 0){
+        ctx.fillStyle = snakeHeadColour;
+      } else {
+        ctx.fillStyle = dead ? deadColour : snakeColour;
+      }
       drawSection(ctx, posArray[i]);
     }
 
