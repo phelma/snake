@@ -143,11 +143,11 @@ SNAKE.game = (function() {
   }
 
   function getUsername(){
-    return nameEl.value.toUpperCase() || 'ANON';
+    return nameEl.value.toUpperCase();
   }
 
   function addScore(){
-    var name = getUsername();
+    var name = getUsername() || 'ANON';
     var score = snake.getScore();
     scoreListRef.push({name: name, score: score, appVersion: APP_VERSION});
   }
@@ -164,6 +164,8 @@ SNAKE.game = (function() {
   var cookieName = Cookies.get('username');
   if (cookieName){
     setUsername(cookieName);
+  } else {
+    nameEl.focus();
   }
 
   nameEl.addEventListener('change', saveUserName);
