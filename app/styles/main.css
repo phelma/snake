@@ -13,9 +13,13 @@ body {
   color: #333;
 }
 
+p {
+  line-height: 1em;
+}
+
 .touch {
   position: absolute;
-  top: 2em;
+  top: 3em;
   right: 0;
   left: 0;
   bottom: 0;
@@ -24,7 +28,7 @@ body {
 
 .username {
   margin: 1em;
-  width: 5em;
+  width: 3em;
   text-transform: uppercase;
 }
 
@@ -33,7 +37,6 @@ canvas.snake {
   height: 400px;
   width: 400px;
   border: 1px solid black;
-  margin-top: 2em;
 }
 
 .leaderboard {
