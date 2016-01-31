@@ -1,10 +1,11 @@
-/* global Hammer */
+/* global Hammer Firebase Cookies */
 'use strict';
 
 var width = 10;
 var height = 10;
 
-var fps = 5;
+var startFps = 5;
+var fps = startFps;
 var frameLength = 1000 / fps;
 
 var startX = 2;
@@ -22,13 +23,19 @@ var scoreColour = '#F2C500';
 
 var SNAKE = {};
 
+var APP_VERSION = 0.1;
+
 var touchEl = document.querySelector('.touch');
+var nameEl = document.querySelector('input.username');
 var hammertime = new Hammer.Manager(touchEl);
 hammertime.add( new Hammer.Swipe({direction: Hammer.DIRECTION_ALL}));
+hammertime.add( new Hammer.Tap({event: 'doubletap', taps: 2}));
 
 SNAKE.game = (function() {
   var ctx;
   var snake;
+  var initialized = false;
+  var scoreListRef;
 
   function gameLoop() {
     ctx.fillStyle = bgColour;
@@ -36,7 +43,8 @@ SNAKE.game = (function() {
     snake.drawScore(ctx);
     snake.advance();
     if (snake.check().crash){
-      // snake.dead
+      snake.die();
+      addScore();
       snake.draw(ctx, true);
     } else {
       if (snake.check().food){
@@ -51,10 +59,23 @@ SNAKE.game = (function() {
 
   function bindEvents() {
     var keysToDirections = {
+      // arrow keys
       37: 'left',
       38: 'up',
       39: 'right',
       40: 'down'
+
+      // //WASD
+      // 65: 'left',
+      // 87: 'up',
+      // 68: 'right',
+      // 83: 'down',
+
+      // //HJKL
+      // 72: 'left',
+      // 74: 'down',
+      // 75: 'up',
+      // 76: 'right'
     };
 
     var swipeToDirections = {
@@ -64,6 +85,13 @@ SNAKE.game = (function() {
       16: 'down'
     };
 
+    function restart(){
+      if (snake.isDead()){
+        snake.reset();
+        gameLoop();
+      }
+    }
+
     document.onkeydown = function(event) {
       var key = event.which;
       var direction = keysToDirections[key];
@@ -72,7 +100,7 @@ SNAKE.game = (function() {
         snake.setDirection(direction);
         event.preventDefault();
       } else if (key === 32) {
-        init();
+        restart();
       }
     };
 
@@ -84,9 +112,18 @@ SNAKE.game = (function() {
       }
     });
 
+    hammertime.on('doubletap', function(event){
+      event.preventDefault();
+      restart();
+    });
   }
 
   function init() {
+    if (initialized){
+      console.error('Dont init twice');
+      return;
+    }
+    initialized = true;
     var canvas = document.querySelector('canvas.snake');
     let deviceWidth = document.querySelector('.touch').clientWidth;
     let deviceHeight = document.querySelector('.touch').clientHeight;
@@ -95,15 +132,41 @@ SNAKE.game = (function() {
     canvas.style.width = canvasSize * 0.9 + 'px';
     canvas.style.height = canvasSize * 0.9 + 'px';
 
-
     canvas.width = width;
     canvas.height = height;
     ctx = canvas.getContext('2d');
     snake = SNAKE.snake();
     bindEvents();
     gameLoop();
+
+    scoreListRef = new Firebase('https://snake-scores.firebaseio.com/');
   }
 
+  function getUsername(){
+    return nameEl.value.toUpperCase() || 'ANON';
+  }
+
+  function addScore(){
+    var name = getUsername();
+    var score = snake.getScore();
+    scoreListRef.push({name: name, score: score, appVersion: APP_VERSION});
+  }
+
+  function saveUserName(){
+    var userName = getUsername();
+    Cookies.set('username', userName, {expires: Infinity});
+  }
+
+  function setUsername(username){
+    nameEl.value = username;
+  }
+
+  var cookieName = Cookies.get('username');
+  if (cookieName){
+    setUsername(cookieName);
+  }
+
+  nameEl.addEventListener('change', saveUserName);
 
   return {
     init: init
@@ -112,6 +175,7 @@ SNAKE.game = (function() {
 })();
 
 SNAKE.snake = function() {
+  this.dead = false;
   var posArray = [];
   var foodPos = [2, 6];
   for (let i = 0; i < startLength; i++){
@@ -121,6 +185,20 @@ SNAKE.snake = function() {
   var direction = 'right';
   var nextDirection = direction;
   var directionAfterThat = nextDirection;
+
+  function reset(){
+    this.dead = false;
+    fps = startFps;
+    frameLength = 1000 / fps;
+    posArray = [];
+    foodPos = [2, 6];
+    for (let i = 0; i < startLength; i++){
+      posArray.push([startX, startY - i]);
+    }
+    direction = 'right';
+    nextDirection = direction;
+    directionAfterThat = nextDirection;
+  }
 
   function setDirection(newDirection) {
     var allowedDirections;
@@ -144,12 +222,15 @@ SNAKE.snake = function() {
     }
   }
 
+  function getScore(){
+    return posArray.length - startLength;
+  }
+
   function drawScore (ctx) {
     ctx.save();
     ctx.fillStyle = scoreColour;
-    ctx.font = '8px "Press Start 2P"';
-    var score = posArray.length - startLength;
-    ctx.fillText(score, 0, height, width);
+    ctx.font = '8px "5x5 Pixel"';
+    ctx.fillText(getScore(), 1, height);
   }
 
   function drawSection(ctx, position) {
@@ -286,6 +367,14 @@ SNAKE.snake = function() {
     frameLength = 1000 / fps;
   }
 
+  function die(){
+    this.dead = true;
+  }
+
+  function isDead(){
+    return this.dead;
+  }
+
   return {
     draw: draw,
     advance: advance,
@@ -294,8 +383,12 @@ SNAKE.snake = function() {
     longer: longer,
     eat: eat,
     drawScore: drawScore,
-    speedup: speedup
+    speedup: speedup,
+    die: die,
+    isDead: isDead,
+    reset: reset,
+    getScore: getScore
   };
 };
 
-SNAKE.game.init();
+window.onload = SNAKE.game.init();
