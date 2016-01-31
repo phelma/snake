@@ -1,1 +1,31 @@
-"use strict";function addRow(e){var t=document.createElement("tr"),r=document.createElement("td");r.innerHTML=e.name.toUpperCase();var a=document.createElement("td");a.innerHTML=e.score,t.appendChild(a),t.appendChild(r),table.insertBefore(t,table.firstChild)}var LEADERBOARD_SIZE=20,scoreListRef=new Firebase("https://snake-scores.firebaseio.com/"),table=document.querySelector(".leaderboard-table");scoreListRef.orderByChild("score").limitToLast(LEADERBOARD_SIZE).on("value",function(e){table.innerHTML="",e.forEach(function(e){var t=e.val();addRow(t)})});
+/* global Firebase */
+'use strict';
+
+var LEADERBOARD_SIZE = 20;
+
+var scoreListRef = new Firebase('https://snake-scores.firebaseio.com/');
+
+// var htmlForPath = {};
+
+var table = document.querySelector('.leaderboard-table');
+
+function addRow(val) {
+  var row = document.createElement('tr');
+  var user = document.createElement('td');
+  user.innerHTML = val.name.toUpperCase();
+  var score = document.createElement('td');
+  score.innerHTML = val.score;
+  row.appendChild(score);
+  row.appendChild(user);
+
+  table.insertBefore(row, table.firstChild);
+}
+
+scoreListRef.orderByChild('score').limitToLast(LEADERBOARD_SIZE).on('value', function (snapshot) {
+  table.innerHTML = '';
+  snapshot.forEach(function (data) {
+    var val = data.val();
+    addRow(val);
+  });
+});
+//# sourceMappingURL=leaderboard.js.map

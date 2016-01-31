@@ -1,1 +1,393 @@
-"use strict";var width=10,height=10,startFps=5,fps=startFps,frameLength=1e3/fps,startX=2,startY=2,startLength=10,throughWalls=!0,bgColour="#ECF0F1",snakeHeadColour="#2B3E51",snakeColour="#305791",deadColour="#C23824",foodColour="#1AAF5D",scoreColour="#F2C500",SNAKE={},APP_VERSION=.1,touchEl=document.querySelector(".touch"),nameEl=document.querySelector("input.username"),hammertime=new Hammer.Manager(touchEl);hammertime.add(new Hammer.Swipe({direction:Hammer.DIRECTION_ALL})),hammertime.add(new Hammer.Tap({event:"doubletap",taps:2})),SNAKE.game=function(){function e(){s.fillStyle=bgColour,s.fillRect(0,0,width,height),u.drawScore(s),u.advance(),u.check().crash?(u.die(),o(),u.draw(s,!0)):(u.check().food&&(u.eat(),u.longer(1),u.speedup()),u.draw(s),setTimeout(e,frameLength))}function t(){function t(){u.isDead()&&(u.reset(),e())}var r={37:"left",38:"up",39:"right",40:"down"},n={2:"left",4:"right",8:"up",16:"down"};document.onkeydown=function(e){var n=e.which,o=r[n];o?(u.setDirection(o),e.preventDefault()):32===n&&t()},hammertime.on("swipe",function(e){e.preventDefault();var t=n[e.direction];t&&u.setDirection(t)}),hammertime.on("doubletap",function(e){e.preventDefault(),t()})}function r(){if(h)return void console.error("Dont init twice");h=!0;var r=document.querySelector("canvas.snake"),n=document.querySelector(".touch").clientWidth,o=document.querySelector(".touch").clientHeight,a=Math.min(n,o);r.style.width=.9*a+"px",r.style.height=.9*a+"px",r.width=width,r.height=height,s=r.getContext("2d"),u=SNAKE.snake(),t(),e(),c=new Firebase("https://snake-scores.firebaseio.com/")}function n(){return nameEl.value.toUpperCase()||"ANON"}function o(){var e=n(),t=u.getScore();c.push({name:e,score:t,appVersion:APP_VERSION})}function a(){var e=n();Cookies.set("username",e,{expires:1/0})}function i(e){nameEl.value=e}var s,u,c,h=!1,l=Cookies.get("username");return l&&i(l),nameEl.addEventListener("change",a),{init:r}}(),SNAKE.snake=function(){function e(){this.dead=!1,fps=startFps,frameLength=1e3/fps,p=[],v=[2,6];for(var e=0;startLength>e;e++)p.push([startX,startY-e]);S="right",k=S,C=k}function t(e){var t;switch(S){case"left":case"right":t=["up","down"];break;case"up":case"down":t=["left","right"];break;default:throw"Invalid direction"}t.indexOf(e)>-1?k=e:C=e}function r(){return p.length-startLength}function n(e){e.save(),e.fillStyle=scoreColour,e.font='8px "5x5 Pixel"',e.fillText(r(),1,height)}function o(e,t){var r=t[0],n=t[1];e.fillRect(r,n,1,1)}function a(e,t){e.save();for(var r=0;r<p.length;r++)0===r?e.fillStyle=snakeHeadColour:e.fillStyle=t?deadColour:snakeColour,o(e,p[r]);e.fillStyle=foodColour,o(e,v),e.restore()}function i(e,t){return(e%t+t)%t}function s(){var e=p[0].slice();switch(S=k,C&&(t(C),C=void 0),S){case"left":e[0]-=1;break;case"up":e[1]-=1;break;case"right":e[0]+=1;break;case"down":e[1]+=1;break;default:throw"Invalid direction"}throughWalls&&(e[0]=i(e[0],width),e[1]=i(e[1],height)),p.unshift(e),this.extend>0?this.extend--:p.pop()}function u(e,t){var r=e[0]===t[0]&&e[1]===t[1];return r}function c(e,t){var r=!1;return t.forEach(function(t){u(e,t)&&(r=!0)}),r}function h(){var e=!1,t=p[0],r=p.slice(1,-1),n=t[0],o=t[1],a=!1;e=!throughWalls&&0>n||n>=width||0>o||o>=height?!0:e,e=c(t,r)?!0:e,u(v,t)&&(a=!0);var i={};return i.crash=e,i.crashHead=t,i.food=a,i}function l(e){this.extend=e}function d(){var e=Math.floor(Math.random()*width),t=Math.floor(Math.random()*height),r=[e,t];c(r,p)?d():v=r}function f(){fps+=.1,frameLength=1e3/fps}function m(){this.dead=!0}function g(){return this.dead}this.dead=!1;for(var p=[],v=[2,6],w=0;startLength>w;w++)p.push([startX,startY-w]);var S="right",k=S,C=k;return{draw:a,advance:s,setDirection:t,check:h,longer:l,eat:d,drawScore:n,speedup:f,die:m,isDead:g,reset:e,getScore:r}},window.onload=SNAKE.game.init();
+/* global Hammer Firebase Cookies */
+'use strict';
+
+var width = 10;
+var height = 10;
+
+var startFps = 5;
+var fps = startFps;
+var frameLength = 1000 / fps;
+
+var startX = 2;
+var startY = 2;
+var startLength = 10;
+
+var throughWalls = true;
+
+var bgColour = '#ECF0F1';
+var snakeHeadColour = '#2B3E51';
+var snakeColour = '#305791';
+var deadColour = '#C23824';
+var foodColour = '#1AAF5D';
+var scoreColour = '#F2C500';
+
+var SNAKE = {};
+
+var APP_VERSION = 0.1;
+
+var touchEl = document.querySelector('.touch');
+var nameEl = document.querySelector('input.username');
+var hammertime = new Hammer.Manager(touchEl);
+hammertime.add(new Hammer.Swipe({ direction: Hammer.DIRECTION_ALL }));
+hammertime.add(new Hammer.Tap({ event: 'doubletap', taps: 2 }));
+
+SNAKE.game = function () {
+  var ctx;
+  var snake;
+  var initialized = false;
+  var scoreListRef;
+
+  function gameLoop() {
+    ctx.fillStyle = bgColour;
+    ctx.fillRect(0, 0, width, height);
+    snake.drawScore(ctx);
+    snake.advance();
+    if (snake.check().crash) {
+      snake.die();
+      addScore();
+      snake.draw(ctx, true);
+    } else {
+      if (snake.check().food) {
+        snake.eat();
+        snake.longer(1);
+        snake.speedup();
+      }
+      snake.draw(ctx);
+      setTimeout(gameLoop, frameLength);
+    }
+  }
+
+  function bindEvents() {
+    var keysToDirections = {
+      // arrow keys
+      37: 'left',
+      38: 'up',
+      39: 'right',
+      40: 'down'
+
+      // //WASD
+      // 65: 'left',
+      // 87: 'up',
+      // 68: 'right',
+      // 83: 'down',
+
+      // //HJKL
+      // 72: 'left',
+      // 74: 'down',
+      // 75: 'up',
+      // 76: 'right'
+    };
+
+    var swipeToDirections = {
+      2: 'left',
+      4: 'right',
+      8: 'up',
+      16: 'down'
+    };
+
+    function restart() {
+      if (snake.isDead()) {
+        snake.reset();
+        gameLoop();
+      }
+    }
+
+    document.onkeydown = function (event) {
+      var key = event.which;
+      var direction = keysToDirections[key];
+
+      if (direction) {
+        snake.setDirection(direction);
+        event.preventDefault();
+      } else if (key === 32) {
+        restart();
+      }
+    };
+
+    hammertime.on('swipe', function (event) {
+      event.preventDefault();
+      var direction = swipeToDirections[event.direction];
+      if (direction) {
+        snake.setDirection(direction);
+      }
+    });
+
+    hammertime.on('doubletap', function (event) {
+      event.preventDefault();
+      restart();
+    });
+  }
+
+  function init() {
+    if (initialized) {
+      console.error('Dont init twice');
+      return;
+    }
+    initialized = true;
+    var canvas = document.querySelector('canvas.snake');
+    var deviceWidth = document.querySelector('.touch').clientWidth;
+    var deviceHeight = document.querySelector('.touch').clientHeight;
+
+    var canvasSize = Math.min(deviceWidth, deviceHeight);
+    canvas.style.width = canvasSize * 0.9 + 'px';
+    canvas.style.height = canvasSize * 0.9 + 'px';
+
+    canvas.width = width;
+    canvas.height = height;
+    ctx = canvas.getContext('2d');
+    snake = SNAKE.snake();
+    bindEvents();
+    gameLoop();
+
+    scoreListRef = new Firebase('https://snake-scores.firebaseio.com/');
+  }
+
+  function getUsername() {
+    return nameEl.value.toUpperCase() || 'ANON';
+  }
+
+  function addScore() {
+    var name = getUsername();
+    var score = snake.getScore();
+    scoreListRef.push({ name: name, score: score, appVersion: APP_VERSION });
+  }
+
+  function saveUserName() {
+    var userName = getUsername();
+    Cookies.set('username', userName, { expires: Infinity });
+  }
+
+  function setUsername(username) {
+    nameEl.value = username;
+  }
+
+  var cookieName = Cookies.get('username');
+  if (cookieName) {
+    setUsername(cookieName);
+  }
+
+  nameEl.addEventListener('change', saveUserName);
+
+  return {
+    init: init
+  };
+}();
+
+SNAKE.snake = function () {
+  this.dead = false;
+  var posArray = [];
+  var foodPos = [2, 6];
+  for (var i = 0; i < startLength; i++) {
+    posArray.push([startX, startY - i]);
+  }
+
+  var direction = 'right';
+  var nextDirection = direction;
+  var directionAfterThat = nextDirection;
+
+  function reset() {
+    this.dead = false;
+    fps = startFps;
+    frameLength = 1000 / fps;
+    posArray = [];
+    foodPos = [2, 6];
+    for (var i = 0; i < startLength; i++) {
+      posArray.push([startX, startY - i]);
+    }
+    direction = 'right';
+    nextDirection = direction;
+    directionAfterThat = nextDirection;
+  }
+
+  function setDirection(newDirection) {
+    var allowedDirections;
+
+    switch (direction) {
+      case 'left':
+      case 'right':
+        allowedDirections = ['up', 'down'];
+        break;
+      case 'up':
+      case 'down':
+        allowedDirections = ['left', 'right'];
+        break;
+      default:
+        throw 'Invalid direction';
+    }
+    if (allowedDirections.indexOf(newDirection) > -1) {
+      nextDirection = newDirection;
+    } else {
+      directionAfterThat = newDirection;
+    }
+  }
+
+  function getScore() {
+    return posArray.length - startLength;
+  }
+
+  function drawScore(ctx) {
+    ctx.save();
+    ctx.fillStyle = scoreColour;
+    ctx.font = '8px "5x5 Pixel"';
+    ctx.fillText(getScore(), 1, height);
+  }
+
+  function drawSection(ctx, position) {
+    var x = position[0];
+    var y = position[1];
+    ctx.fillRect(x, y, 1, 1);
+  }
+
+  function draw(ctx, dead) {
+    ctx.save();
+    for (var i = 0; i < posArray.length; i++) {
+      if (i === 0) {
+        ctx.fillStyle = snakeHeadColour;
+      } else {
+        ctx.fillStyle = dead ? deadColour : snakeColour;
+      }
+      drawSection(ctx, posArray[i]);
+    }
+
+    ctx.fillStyle = foodColour;
+
+    drawSection(ctx, foodPos);
+
+    ctx.restore();
+  }
+
+  function mod(a, b) {
+    return (a % b + b) % b;
+  }
+
+  function advance() {
+    var nextPosition = posArray[0].slice();
+    direction = nextDirection;
+    if (directionAfterThat) {
+      setDirection(directionAfterThat);
+      directionAfterThat = undefined;
+    }
+    switch (direction) {
+      case 'left':
+        nextPosition[0] -= 1;
+        break;
+      case 'up':
+        nextPosition[1] -= 1;
+        break;
+      case 'right':
+        nextPosition[0] += 1;
+        break;
+      case 'down':
+        nextPosition[1] += 1;
+        break;
+      default:
+        throw 'Invalid direction';
+    }
+
+    if (throughWalls) {
+      nextPosition[0] = mod(nextPosition[0], width);
+      nextPosition[1] = mod(nextPosition[1], height);
+    }
+
+    posArray.unshift(nextPosition);
+    if (this.extend > 0) {
+      this.extend--;
+    } else {
+      posArray.pop();
+    }
+  }
+
+  function arraysEqual(a, b) {
+    var equal = a[0] === b[0] && a[1] === b[1];
+    return equal;
+  }
+
+  function inArray(el, arr) {
+    var isIn = false;
+    arr.forEach(function (arrEl) {
+      if (arraysEqual(el, arrEl)) {
+        isIn = true;
+      }
+    });
+    return isIn;
+  }
+
+  function check() {
+    var crash = false;
+    var head = posArray[0];
+    var body = posArray.slice(1, -1);
+    var headX = head[0];
+    var headY = head[1];
+    var food = false;
+
+    if (!throughWalls && headX < 0 || headX >= width || headY < 0 || headY >= height) {
+      crash = true || crash;
+    } else {
+      crash = false || crash;
+    }
+
+    if (inArray(head, body)) {
+      crash = true || crash;
+    } else {
+      crash = false || crash;
+    }
+
+    if (arraysEqual(foodPos, head)) {
+      food = true || food;
+    }
+
+    var out = {};
+    out.crash = crash;
+    out.crashHead = head;
+    out.food = food;
+
+    return out;
+  }
+
+  function longer(a) {
+    this.extend = a;
+  }
+
+  function eat() {
+    var x = Math.floor(Math.random() * width);
+    var y = Math.floor(Math.random() * height);
+    var newFoodPos = [x, y];
+
+    if (inArray(newFoodPos, posArray)) {
+      eat();
+    } else {
+      foodPos = newFoodPos;
+    }
+  }
+
+  function speedup() {
+    fps += 0.1;
+    frameLength = 1000 / fps;
+  }
+
+  function die() {
+    this.dead = true;
+  }
+
+  function isDead() {
+    return this.dead;
+  }
+
+  return {
+    draw: draw,
+    advance: advance,
+    setDirection: setDirection,
+    check: check,
+    longer: longer,
+    eat: eat,
+    drawScore: drawScore,
+    speedup: speedup,
+    die: die,
+    isDead: isDead,
+    reset: reset,
+    getScore: getScore
+  };
+};
+
+window.onload = SNAKE.game.init();
+//# sourceMappingURL=main.js.map

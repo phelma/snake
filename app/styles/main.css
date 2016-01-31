@@ -5,9 +5,6 @@
        url('../fonts/5x5_pixel.woff') format('woff'), /* Modern Browsers */
        url('../fonts/5x5_pixel.ttf')  format('truetype'), /* Safari, Android, iOS */
        url('../fonts/5x5_pixel.svg#aabcd2513bcaccfd831c4258ab0fffa9') format('svg'); /* Legacy iOS */
-
-  font-style:   normal;
-  font-weight:  400;
 }
 
 body {
