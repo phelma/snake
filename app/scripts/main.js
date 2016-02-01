@@ -23,7 +23,7 @@ var scoreColour = '#F2C500';
 
 var SNAKE = {};
 
-var APP_VERSION = 0.1;
+// var APP_VERSION = 0.1;
 
 var touchEl = document.querySelector('.touch');
 var nameEl = document.querySelector('input.username');
@@ -139,7 +139,7 @@ SNAKE.game = (function() {
     bindEvents();
     gameLoop();
 
-    scoreListRef = new Firebase('https://snake-scores.firebaseio.com/dev');
+    scoreListRef = new Firebase('https://snake-scores.firebaseio.com/main');
   }
 
   function getUsername(){

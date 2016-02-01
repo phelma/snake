@@ -23,7 +23,7 @@ var scoreColour = '#F2C500';
 
 var SNAKE = {};
 
-var APP_VERSION = 0.1;
+// var APP_VERSION = 0.1;
 
 var touchEl = document.querySelector('.touch');
 var nameEl = document.querySelector('input.username');
@@ -139,7 +139,7 @@ SNAKE.game = function () {
     bindEvents();
     gameLoop();
 
-    scoreListRef = new Firebase('https://snake-scores.firebaseio.com/');
+    scoreListRef = new Firebase('https://snake-scores.firebaseio.com/main');
   }
 
   function getUsername() {
@@ -149,7 +149,13 @@ SNAKE.game = function () {
   function addScore() {
     var name = getUsername() || 'ANON';
     var score = snake.getScore();
-    scoreListRef.push({ name: name, score: score, appVersion: APP_VERSION });
+
+    scoreListRef.child('aasd').once('value', function (snapshot) {
+      var prevScore = snapshot.val();
+      if (!prevScore || score > prevScore) {
+        scoreListRef.child(name).setWithPriority(score, score);
+      }
+    });
   }
 
   function saveUserName() {

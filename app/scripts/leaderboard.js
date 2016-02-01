@@ -3,7 +3,7 @@
 
 var LEADERBOARD_SIZE = 20;
 
-var scoreListRef = new Firebase('https://snake-scores-dev.firebaseio.com/dev');
+var scoreListRef = new Firebase('https://snake-scores.firebaseio.com/main');
 
 // var htmlForPath = {};
 
