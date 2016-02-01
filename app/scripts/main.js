@@ -150,7 +150,7 @@ SNAKE.game = (function() {
     var name = getUsername() || 'ANON';
     var score = snake.getScore();
 
-    scoreListRef.child('aasd').once('value', function(snapshot){
+    scoreListRef.child(name).once('value', function(snapshot){
       var prevScore = snapshot.val();
       if ( !prevScore || score > prevScore ){
         scoreListRef.child(name).setWithPriority(score, score);
