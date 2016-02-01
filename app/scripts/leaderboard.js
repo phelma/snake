@@ -3,28 +3,26 @@
 
 var LEADERBOARD_SIZE = 20;
 
-var scoreListRef = new Firebase('https://snake-scores.firebaseio.com/');
+var scoreListRef = new Firebase('https://snake-scores-dev.firebaseio.com/dev');
 
 // var htmlForPath = {};
 
 var table = document.querySelector('.leaderboard-table');
 
-function addRow(val){
+function addRow(data){
   var row = document.createElement('tr');
   var user = document.createElement('td');
-  user.innerHTML = val.name.toUpperCase();
+  user.innerHTML = data.key().toUpperCase();
   var score = document.createElement('td');
-  score.innerHTML = val.score;
+  score.innerHTML = data.val();
   row.appendChild(score);
   row.appendChild(user);
 
   table.insertBefore(row, table.firstChild);
 }
 
-scoreListRef.orderByChild('score').limitToLast(LEADERBOARD_SIZE).on('value', function(snapshot){
+scoreListRef.orderByValue().limitToLast(LEADERBOARD_SIZE).on('value', function(snapshot){
   table.innerHTML = '';
-  snapshot.forEach(function (data) {
-    var val = data.val();
-    addRow(val);
-  });
+  snapshot.forEach(addRow);
 });
+
