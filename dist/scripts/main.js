@@ -1,4 +1,4 @@
-/* global Hammer Firebase Cookies */
+/* global Hammer Firebase Cookies ga */
 'use strict';
 
 var width = 10;
@@ -156,6 +156,8 @@ SNAKE.game = function () {
         scoreListRef.child(name).setWithPriority(score, score);
       }
     });
+
+    ga('send', 'event', 'game', 'over', name, score);
   }
 
   function saveUserName() {

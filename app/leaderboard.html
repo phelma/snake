@@ -7,24 +7,6 @@
   <title>Leaderboard</title>
 
   <link rel="stylesheet" href="styles/main.css">
-</head>
-<body>
-
-  <div class="leaderboard">
-    <table class="leaderboard-table">
-    </table>
-  </div>
-
-
-
-  <!-- build:js scripts/leader-vendor.js -->
-  <script src="/bower_components/js-cookie/src/js.cookie.js"></script>
-  <!-- endbuild -->
-
-  <script src="https://cdn.firebase.com/js/client/2.2.1/firebase.js"></script>
-  <!-- build:js scripts/leaderboard.js -->
-  <script src="scripts/leaderboard.js"></script>
-  <!-- endbuild -->
 
   <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -35,5 +17,21 @@
     ga('create', 'UA-43882047-4', 'auto');
     ga('send', 'pageview');
   </script>
+</head>
+<body>
+
+  <div class="leaderboard">
+    <table class="leaderboard-table">
+    </table>
+  </div>
+
+  <!-- build:js scripts/leader-vendor.js -->
+  <script src="/bower_components/js-cookie/src/js.cookie.js"></script>
+  <!-- endbuild -->
+
+  <script src="https://cdn.firebase.com/js/client/2.2.1/firebase.js"></script>
+  <!-- build:js scripts/leaderboard.js -->
+  <script src="scripts/leaderboard.js"></script>
+  <!-- endbuild -->
 </body>
 </html>
