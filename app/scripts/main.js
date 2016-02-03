@@ -20,6 +20,7 @@ var snakeColour = '#305791';
 var deadColour = '#C23824';
 var foodColour = '#1AAF5D';
 var scoreColour = '#F2C500';
+var nameWarnColour = '#F59D00';
 
 var SNAKE = {};
 
@@ -30,6 +31,16 @@ var nameEl = document.querySelector('input.username');
 var hammertime = new Hammer.Manager(touchEl);
 hammertime.add( new Hammer.Swipe({direction: Hammer.DIRECTION_ALL}));
 hammertime.add( new Hammer.Tap({event: 'tap', taps: 1}));
+
+function checkName(){
+  if (!nameEl.value || nameEl.value === 'ANON') {
+    nameEl.style.backgroundColor = nameWarnColour;
+    nameEl.style.borderColor = nameWarnColour;
+  } else {
+    nameEl.style.backgroundColor = foodColour;
+    nameEl.style.borderColor = foodColour;
+  }
+}
 
 SNAKE.game = (function() {
   var ctx;
@@ -101,6 +112,8 @@ SNAKE.game = (function() {
         event.preventDefault();
       } else if (key === 32) {
         restart();
+      } else {
+        checkName();
       }
     };
 
@@ -140,7 +153,13 @@ SNAKE.game = (function() {
     gameLoop();
 
     scoreListRef = new Firebase('https://snake-scores.firebaseio.com/main');
+
+    checkName();
+
+    nameEl.onchange = checkName;
   }
+
+
 
   function getUsername(){
     return nameEl.value.toUpperCase();

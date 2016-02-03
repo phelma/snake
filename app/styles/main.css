@@ -46,3 +46,13 @@ canvas.snake {
 .leaderboard td {
   padding: 0.2em;
 }
+
+.username {
+    border-color: rgb(26, 175, 93);
+    border-style: solid;
+    background-color: rgb(26, 175, 93);
+    color: #FFF;
+    font-family: '5x5 Pixel';
+    padding: 4px;
+    font-size: 15px;
+}
