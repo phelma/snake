@@ -29,7 +29,7 @@ var touchEl = document.querySelector('.touch');
 var nameEl = document.querySelector('input.username');
 var hammertime = new Hammer.Manager(touchEl);
 hammertime.add( new Hammer.Swipe({direction: Hammer.DIRECTION_ALL}));
-hammertime.add( new Hammer.Tap({event: 'doubletap', taps: 2}));
+hammertime.add( new Hammer.Tap({event: 'tap', taps: 1}));
 
 SNAKE.game = (function() {
   var ctx;
@@ -112,7 +112,7 @@ SNAKE.game = (function() {
       }
     });
 
-    hammertime.on('doubletap', function(event){
+    hammertime.on('tap', function(event){
       event.preventDefault();
       restart();
     });
